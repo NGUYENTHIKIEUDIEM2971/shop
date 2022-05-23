@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đồ Án</title>
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="fonts/fontawesome/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Paytone+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/home.css">
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script> 
+<script>
+    function thongKe()
+      {
+          var request = new XMLHttpRequest();
+          var urlHere = "https://api.thingspeak.com/update?";
+          urlHere = "https://api.thingspeak.com/channels/1713662/feeds.json";
+          request.open('GET', urlHere, true);
+          request.onload = function() {
+              if (request.status == 200) {
+                  var data = JSON.parse(request.responseText);
+                  //console.log(data);
+                  var length = data.feeds.length;  //kich thuoc du lieu
+                  //loc bo cac phan tu null
+                  dataNhap = new Array();
+                  dataXuat = new Array();
+                  for(i=0;i<length;i++){
+                    if (data.feeds[i].field1 != null){
+                      dataNhap.push(data.feeds[i].field1);
+                    }
+                    if (data.feeds[i].field2 != null){
+                      dataXuat.push(data.feeds[i].field2);
+                    }
+                  }
+                  // hiển thị số lượng tồn kho
+                  tongXuat=0, tongNhap=0, tonKho=0;
+                  //tính tổng xuất
+                  for(i=0;i<dataXuat.length;i++){
+                    tongXuat += parseInt(dataXuat[i]);
+                  }
+                  //tính tổng nhập
+                  for(i=0;i<dataNhap.length;i++){
+                    tongNhap += parseInt(dataNhap[i]);
+                  }
+                  //tính tồn kho
+                  tonKho = tongNhap - tongXuat;
+                  document.getElementById("thongke").innerHTML = "Tổng số sản phẩm đang trong kho:"+tonKho;
+                  //Ve bieu đồ nhập xuất
+                  var yNhap = new Array();
+                  var yXuat = new Array();
+                  var xNhap = new Array();
+                  var xXuat = new Array();
+                  for(var i=0;i<length;i++){
+                    if (data.feeds[i].field1 != null){
+                      yNhap.push(data.feeds[i].field1);
+                      xNhap.push(data.feeds[i].created_at);
+                    }
+                    if (data.feeds[i].field2 != null){
+                      yXuat.push(data.feeds[i].field2);
+                      xXuat.push(data.feeds[i].created_at);
+                    }
+                  }
+                  //bieu đồ
+                  new Chart("chartNhap", {
+                      type: "bar",
+                      data: {
+                          labels: xNhap,
+                          datasets: [
+                          {
+                              fill: false,
+                              backgroundColor: "red",
+                              label: "Quá trình nhập hàng",
+                              data: yNhap
+                          }, 
+                          ]
+                      },
+                      options: {
+                          plugins:{
+                              legend: {
+                                display: true,
+                              }
+                          },
+                          scales: {
+                              yAxes: [{
+                                display: true,
+                                ticks: {
+                                  beginAtZero: true,
+                                  //max: (yNhap.max)
+                                }
+                              }]
+                          }
+                      }
+                  });
+                  new Chart("chartXuat", {
+                      type: "bar",
+                      data: {
+                          labels: xXuat,
+                          datasets: [
+                          {
+                              fill: false,
+                              backgroundColor: "blue",
+                              label: "Quá trình xuất hàng",
+                              data: yXuat
+                          }, 
+                          ]
+                      },
+                      options: {
+                          plugins:{
+                              legend: {
+                                  display: true,
+                              }
+                          },
+                          scales: {
+                              yAxes: [{
+                                  display: true,
+                                  ticks: {
+                                      beginAtZero: true,
+                                      //max: (yXuat.max)
+                                  }
+                              }]
+                          }
+                      }
+                  });
+  
+              } else {
+              // We reached our target server, but it returned an error
+              }
+          };
+          request.send();
+  
+          
+          //request.open('GET', urlHere, true);
+          //request.send();
+      }
+  </script> 
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 200;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  /* Style the side navigation */
+  .sidenav {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 100px;
+    background-color: #111;
+    overflow-x: hidden;
+  }
+  
+  
+  /* Side navigation links */
+  .sidenav a {
+    color: white;
+    padding: 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  /* Change color on hover */
+  .sidenav a:hover {
+    background-color: #ddd;
+    color: black;
+  }
+  
+  /* Style the content */
+  .content {
+    margin-left: 300px;
+    padding-left: 20px;
+  }
+ label {
+ font-size: 15px;
+ color: #333
+}
+ input {
+ font-size: 15px;
+ color: #333
+}
+  </style>
+</head>
+<body onload="thongKe()">
+    <div class="app">
+        <header id="header">
+        <!-- header top -->
+        <div class="header__top">
+            <div class="container">
+                <section class="row flex">
+                    <div class="col-lg-5 col-md-0 col-sm-0 heade__top-left">
+                        <span>COOL SNEAKERS</span>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <!--end header top -->
+
+        <!-- header bottom -->
+        <div class="header__bottom">
+            <div class="container">
+                <section class="row">
+                    <div class="col-lg-3 col-md-4 col-sm-12 header__logo">
+                        <h1 class="header__heading">
+                            <a href="#" class="header__logo-link">
+                                <img src="images1/product/logo.png" width="200px" height="100px" alt="Logo" class="header__logo-img">
+                            </a>
+                        </h1>
+                    </div>
+
+                    <div class="col-lg-6 col-md-7 col-sm-0 header__search">
+                        
+                        <input type="text" class="header__search-input" placeholder="Tìm kiếm tại đây...">
+                        <button class="header__search-btn">
+                            <div class="header__search-icon-wrap">
+                                <i class="fas fa-search header__search-icon"></i>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="col-lg-2 col-md-0 col-sm-0 header__call">
+                        <div class="header__call-icon-wrap">
+                            <i class="fas fa-phone-alt header__call-icon"></i>  
+                        </div>
+                        <div class="header__call-info">
+                            <div class="header__call-text">
+                                Gọi điện tư vấn
+                            </div>
+                            <div class="header__call-number">
+                                0123456789
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="cart.html" class="col-lg-1 col-md-1 col-sm-0 header__cart">
+                        <div class="header__cart-icon-wrap">
+                            <span class="header__notice">4</span>
+                            <i class="fas fa-shopping-cart header__nav-cart-icon"></i>
+                        </div>
+                    </a>
+                </section>
+            </div>   
+        </div>
+        <!--end header bottom -->
+
+        <!-- header nav -->
+        <div class="header__nav">
+            <div class="container">
+                <section class="row"> 
+
+                    <div class="header__nav col-lg-9 col-md-0 col-sm-0">
+                        <ul class="header__nav-list">
+                            <li class="header__nav-item">
+                                <a href="TongQuan.html" class="header__nav-link">Tổng Quan</a>
+                            </li>
+                            <li class="header__nav-item">
+                                <a href="TrangChu.html" class="header__nav-link">Trang chủ</a>
+                            </li>
+                            <li class="header__nav-item">
+                                <a href="thanhvien.html" class="header__nav-link">Thành viên</a>
+                            </li>
+                            
+                            <li class="header__nav-item">
+                                <a href="DoAn.html" class="header__nav-link">Đồ án</a>
+                            </li>
+                            <li class="header__nav-item">
+                                <a href="ThongKe.html" class="header__nav-link">Thống Kê</a>
+                            </li>
+                            <li class="header__nav-item">
+                                <a href="LienHe.html" class="header__nav-link">Liên hệ</a>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </header>
+    <!--end header nav -->
+
+    <!--body -->
+    <div class="content">
+        <h2>Quá trình nhập hàng</h2>
+        <form name="form2">
+              <input type = "button" value = "Kiểm tra" onclick = "thongKe()" style = "height: 50px; width: 100px; vertical-align: middle;">
+        </form>
+        <h3 id="thongke"> </h3>
+        <canvas id="chartNhap" style="width:200%;max-width:900px"></canvas>
+        <br>
+        <h2>Quá trình xuất hàng</h2>
+        <canvas id="chartXuat" style="width:200%;max-width:900px"></canvas>
+      </div>
+    <!-- footer -->
+    <footer>
+        <section class="footer__bottom">
+            <div class="container">
+                <div class="row">
+                    <span class="footer__bottom-content"> KC326 Nhóm 1 | HK2 | 2021-2022 </span>
+                </div>
+            </div>
+        </section>
+    </footer>
+    <!-- end footer -->
+    </div>
+    <script src="js/jq.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>
